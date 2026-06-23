@@ -1,6 +1,7 @@
 package msNotificaciones.msNotificaciones.notificaciones.service;
 
 import msNotificaciones.msNotificaciones.notificaciones.dto.NotificacionDTO;
+import msNotificaciones.msNotificaciones.notificaciones.exception.ResourceNotFoundException;
 import msNotificaciones.msNotificaciones.notificaciones.model.Notificacion;
 import msNotificaciones.msNotificaciones.notificaciones.repository.NotificacionRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +35,11 @@ public class NotificacionService {
 
     public Notificacion obtenerNotificacionPorId(Long id) {
         logger.info("Buscando notificacion con id: {}", id);
+        // Corregido: usa ResourceNotFoundException en lugar de RuntimeException genérico
         return notificacionRepository.findById(id)
                 .orElseThrow(() -> {
                     logger.error("Notificacion con id {} no encontrada", id);
-                    return new RuntimeException("Notificacion no encontrada con id: " + id);
+                    return new ResourceNotFoundException("Notificacion", id);
                 });
     }
 
@@ -47,9 +49,15 @@ public class NotificacionService {
         notificacion.setMensaje(dto.getMensaje());
         notificacion.setDestinatario(dto.getDestinatario());
         notificacion.setTipo(dto.getTipo());
-        notificacion.setEstado(dto.getEstado());
+        // Estado: usa el del DTO si viene, sino deja que @PrePersist asigne "PENDIENTE"
+        if (dto.getEstado() != null && !dto.getEstado().isBlank()) {
+            notificacion.setEstado(dto.getEstado());
+        }
         notificacion.setSocioId(dto.getSocioId());
-        notificacion.setFechaCreacion(dto.getFechaCreacion());
+        // fechaCreacion: usa la del DTO si viene, sino @PrePersist la genera automáticamente
+        if (dto.getFechaCreacion() != null) {
+            notificacion.setFechaCreacion(dto.getFechaCreacion());
+        }
         return notificacionRepository.save(notificacion);
     }
 
@@ -59,19 +67,17 @@ public class NotificacionService {
         notificacion.setMensaje(dto.getMensaje());
         notificacion.setDestinatario(dto.getDestinatario());
         notificacion.setTipo(dto.getTipo());
-        notificacion.setEstado(dto.getEstado());
+        if (dto.getEstado() != null && !dto.getEstado().isBlank()) {
+            notificacion.setEstado(dto.getEstado());
+        }
         notificacion.setSocioId(dto.getSocioId());
-        notificacion.setFechaCreacion(dto.getFechaCreacion());
         return notificacionRepository.save(notificacion);
     }
 
     public void eliminarNotificacion(Long id) {
         logger.info("Eliminando notificacion con id: {}", id);
-        notificacionRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.error("Notificacion con id {} no encontrada para eliminar", id);
-                    return new RuntimeException("Notificacion no encontrada con id: " + id);
-                });
-        notificacionRepository.deleteById(id);
+        // Corregido: verificación y eliminación en una sola llamada limpia
+        Notificacion notificacion = obtenerNotificacionPorId(id);
+        notificacionRepository.delete(notificacion);
     }
 }

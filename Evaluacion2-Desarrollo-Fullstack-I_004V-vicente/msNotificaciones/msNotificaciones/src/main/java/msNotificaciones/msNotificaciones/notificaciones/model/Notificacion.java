@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "notificaciones")
@@ -26,13 +28,26 @@ public class Notificacion {
     @Column(nullable = false)
     private String tipo;
 
+    // Estado con valor por defecto garantizado desde la entidad
     @Column(nullable = false)
-    private String estado;
+    private String estado = "PENDIENTE";
 
     @NotNull(message = "El id del socio no puede ser nulo")
     @Column(nullable = false)
     private Long socioId;
 
-    @Column
-    private String fechaCreacion;
+    // Corregido: LocalDateTime en lugar de String
+    @Column(updatable = false)
+    private LocalDateTime fechaCreacion;
+
+    // Se asigna automáticamente antes de persistir
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaCreacion == null) {
+            this.fechaCreacion = LocalDateTime.now();
+        }
+        if (this.estado == null || this.estado.isBlank()) {
+            this.estado = "PENDIENTE";
+        }
+    }
 }

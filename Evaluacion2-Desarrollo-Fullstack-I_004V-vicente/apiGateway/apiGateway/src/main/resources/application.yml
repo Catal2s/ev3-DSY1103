@@ -1,0 +1,158 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  profiles:
+    active: dev
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+      routes:
+        - id: ms-proveedores
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/proveedores/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ms-proveedores
+                fallbackUri: forward:/fallback/proveedores
+
+        - id: ms-compras
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/compras/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ms-compras
+                fallbackUri: forward:/fallback/compras
+
+        - id: ms-notificaciones
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/notificaciones/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ms-notificaciones
+                fallbackUri: forward:/fallback/notificaciones
+
+        - id: ms-reportes
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/reportes/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ms-reportes
+                fallbackUri: forward:/fallback/reportes
+
+        - id: ms-autenticacion
+          uri: http://localhost:8090
+          predicates:
+            - Path=/api/usuarios/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ms-autenticacion
+                fallbackUri: forward:/fallback/autenticacion
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  cloud:
+    gateway:
+      routes:
+        - id: ms-proveedores
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/proveedores/**
+
+        - id: ms-compras
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/compras/**
+
+        - id: ms-notificaciones
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/notificaciones/**
+
+        - id: ms-reportes
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/reportes/**
+
+        - id: ms-autenticacion
+          uri: http://localhost:8090
+          predicates:
+            - Path=/api/usuarios/**
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    gateway:
+      routes:
+        - id: ms-proveedores
+          uri: http://ms-proveedores:8086
+          predicates:
+            - Path=/api/proveedores/**
+
+        - id: ms-compras
+          uri: http://ms-compras:8087
+          predicates:
+            - Path=/api/compras/**
+
+        - id: ms-notificaciones
+          uri: http://ms-notificaciones:8088
+          predicates:
+            - Path=/api/notificaciones/**
+
+        - id: ms-reportes
+          uri: http://ms-reportes:8089
+          predicates:
+            - Path=/api/reportes/**
+
+        - id: ms-autenticacion
+          uri: http://ms-autenticacion:8090
+          predicates:
+            - Path=/api/usuarios/**
+
+logging:
+  level:
+    org.springframework.cloud.gateway: WARN

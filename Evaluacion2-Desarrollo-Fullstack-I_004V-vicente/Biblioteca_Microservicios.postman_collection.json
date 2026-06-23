@@ -1,0 +1,947 @@
+{
+  "info": {
+    "name": "Biblioteca Digital - Microservicios Vicente",
+    "description": "Colección completa de endpoints para los microservicios del Sistema de Gestión de Biblioteca Digital.\n\nMicroservicios:\n- msAutenticacion (puerto 8090): Gestión de usuarios\n- msCompras (puerto 8087): Gestión de compras\n- msNotificaciones (puerto 8088): Gestión de notificaciones\n- msProveedores (puerto 8086): Gestión de proveedores\n- msReportes (puerto 8089): Gestión de reportes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_autenticacion", "value": "http://localhost:8090", "type": "string" },
+    { "key": "base_compras",       "value": "http://localhost:8087", "type": "string" },
+    { "key": "base_notificaciones","value": "http://localhost:8088", "type": "string" },
+    { "key": "base_proveedores",   "value": "http://localhost:8086", "type": "string" },
+    { "key": "base_reportes",      "value": "http://localhost:8089", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "MS-Autenticacion (puerto 8090)",
+      "description": "Gestión de usuarios del sistema. Roles: ADMIN, BIBLIOTECARIO, SOCIO.",
+      "item": [
+        {
+          "name": "Listar todos los usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_autenticacion}}/api/usuarios",
+              "host": ["{{base_autenticacion}}"],
+              "path": ["api", "usuarios"]
+            },
+            "description": "Retorna la lista completa de todos los usuarios registrados en el sistema."
+          },
+          "response": [
+            {
+              "name": "200 OK - Lista de usuarios",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"nombre\": \"Juan Perez\",\n    \"email\": \"juan@biblioteca.cl\",\n    \"password\": \"pass123\",\n    \"rol\": \"SOCIO\",\n    \"activo\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Obtener usuario por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_autenticacion}}/api/usuarios/1",
+              "host": ["{{base_autenticacion}}"],
+              "path": ["api", "usuarios", "1"]
+            },
+            "description": "Retorna un usuario específico según su ID."
+          },
+          "response": [
+            {
+              "name": "200 OK - Usuario encontrado",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 1,\n  \"nombre\": \"Juan Perez\",\n  \"email\": \"juan@biblioteca.cl\",\n  \"password\": \"pass123\",\n  \"rol\": \"SOCIO\",\n  \"activo\": true\n}"
+            },
+            {
+              "name": "404 Not Found - Usuario no encontrado",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Usuario no encontrado con id: 99\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Obtener usuario por email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_autenticacion}}/api/usuarios/email/juan@biblioteca.cl",
+              "host": ["{{base_autenticacion}}"],
+              "path": ["api", "usuarios", "email", "juan@biblioteca.cl"]
+            },
+            "description": "Busca y retorna un usuario por su dirección de email."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 1,\n  \"nombre\": \"Juan Perez\",\n  \"email\": \"juan@biblioteca.cl\",\n  \"rol\": \"SOCIO\",\n  \"activo\": true\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Usuario no encontrado con email: noexiste@correo.cl\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Listar usuarios por rol",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_autenticacion}}/api/usuarios/rol/SOCIO",
+              "host": ["{{base_autenticacion}}"],
+              "path": ["api", "usuarios", "rol", "SOCIO"]
+            },
+            "description": "Filtra usuarios por rol. Valores válidos: ADMIN, BIBLIOTECARIO, SOCIO."
+          },
+          "response": [
+            {
+              "name": "200 OK - Lista filtrada por rol",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"nombre\": \"Juan Perez\",\n    \"email\": \"juan@biblioteca.cl\",\n    \"rol\": \"SOCIO\",\n    \"activo\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Listar usuarios activos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_autenticacion}}/api/usuarios/activos",
+              "host": ["{{base_autenticacion}}"],
+              "path": ["api", "usuarios", "activos"]
+            },
+            "description": "Retorna únicamente los usuarios con estado activo = true."
+          },
+          "response": [
+            {
+              "name": "200 OK - Usuarios activos",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"nombre\": \"Juan Perez\",\n    \"email\": \"juan@biblioteca.cl\",\n    \"rol\": \"SOCIO\",\n    \"activo\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Maria Lopez\",\n  \"email\": \"maria@biblioteca.cl\",\n  \"password\": \"segura123\",\n  \"rol\": \"BIBLIOTECARIO\",\n  \"activo\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_autenticacion}}/api/usuarios",
+              "host": ["{{base_autenticacion}}"],
+              "path": ["api", "usuarios"]
+            },
+            "description": "Crea un nuevo usuario. El email debe ser único. Roles: ADMIN, BIBLIOTECARIO, SOCIO."
+          },
+          "response": [
+            {
+              "name": "201 Created - Usuario creado",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": 2,\n  \"nombre\": \"Maria Lopez\",\n  \"email\": \"maria@biblioteca.cl\",\n  \"password\": \"segura123\",\n  \"rol\": \"BIBLIOTECARIO\",\n  \"activo\": true\n}"
+            },
+            {
+              "name": "400 Bad Request - Email duplicado",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"Ya existe un usuario con el email: maria@biblioteca.cl\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar usuario",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Maria Lopez Actualizada\",\n  \"email\": \"maria@biblioteca.cl\",\n  \"password\": \"nuevapass456\",\n  \"rol\": \"ADMIN\",\n  \"activo\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_autenticacion}}/api/usuarios/2",
+              "host": ["{{base_autenticacion}}"],
+              "path": ["api", "usuarios", "2"]
+            },
+            "description": "Actualiza todos los datos de un usuario existente según su ID."
+          },
+          "response": [
+            {
+              "name": "200 OK - Usuario actualizado",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 2,\n  \"nombre\": \"Maria Lopez Actualizada\",\n  \"email\": \"maria@biblioteca.cl\",\n  \"rol\": \"ADMIN\",\n  \"activo\": true\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Usuario no encontrado con id: 99\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Eliminar usuario",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_autenticacion}}/api/usuarios/2",
+              "host": ["{{base_autenticacion}}"],
+              "path": ["api", "usuarios", "2"]
+            },
+            "description": "Elimina permanentemente un usuario por su ID."
+          },
+          "response": [
+            {
+              "name": "204 No Content - Eliminado",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Usuario no encontrado con id: 99\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MS-Compras (puerto 8087)",
+      "description": "Gestión de órdenes de compra a proveedores. Estados: PENDIENTE, APROBADA, RECHAZADA, ENTREGADA.",
+      "item": [
+        {
+          "name": "Listar todas las compras",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_compras}}/api/compras",
+              "host": ["{{base_compras}}"],
+              "path": ["api", "compras"]
+            },
+            "description": "Retorna la lista completa de todas las órdenes de compra."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"proveedorId\": 1,\n    \"estado\": \"PENDIENTE\",\n    \"total\": 150000.0,\n    \"fechaCompra\": \"2025-06-01\",\n    \"descripcion\": \"Compra de libros técnicos\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Obtener compra por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_compras}}/api/compras/1",
+              "host": ["{{base_compras}}"],
+              "path": ["api", "compras", "1"]
+            },
+            "description": "Retorna una compra específica según su ID."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 1,\n  \"proveedorId\": 1,\n  \"estado\": \"PENDIENTE\",\n  \"total\": 150000.0,\n  \"fechaCompra\": \"2025-06-01\",\n  \"descripcion\": \"Compra de libros técnicos\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Compra no encontrada con id: 99\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Listar compras por proveedor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_compras}}/api/compras/proveedor/1",
+              "host": ["{{base_compras}}"],
+              "path": ["api", "compras", "proveedor", "1"]
+            },
+            "description": "Filtra las compras realizadas a un proveedor específico."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"proveedorId\": 1,\n    \"estado\": \"APROBADA\",\n    \"total\": 150000.0\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Listar compras por estado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_compras}}/api/compras/estado/PENDIENTE",
+              "host": ["{{base_compras}}"],
+              "path": ["api", "compras", "estado", "PENDIENTE"]
+            },
+            "description": "Filtra compras por estado. Valores: PENDIENTE, APROBADA, RECHAZADA, ENTREGADA."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"proveedorId\": 1,\n    \"estado\": \"PENDIENTE\",\n    \"total\": 150000.0\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Crear compra",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": 1,\n  \"estado\": \"PENDIENTE\",\n  \"total\": 250000.0,\n  \"fechaCompra\": \"2025-06-22\",\n  \"descripcion\": \"Adquisición de libros de programación\"\n}"
+            },
+            "url": {
+              "raw": "{{base_compras}}/api/compras",
+              "host": ["{{base_compras}}"],
+              "path": ["api", "compras"]
+            },
+            "description": "Registra una nueva orden de compra al proveedor indicado."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": 2,\n  \"proveedorId\": 1,\n  \"estado\": \"PENDIENTE\",\n  \"total\": 250000.0,\n  \"fechaCompra\": \"2025-06-22\",\n  \"descripcion\": \"Adquisición de libros de programación\"\n}"
+            },
+            {
+              "name": "400 Bad Request",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"proveedorId\": \"El id del proveedor no puede ser nulo\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar compra",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": 1,\n  \"estado\": \"APROBADA\",\n  \"total\": 250000.0,\n  \"fechaCompra\": \"2025-06-22\",\n  \"descripcion\": \"Adquisición aprobada por gerencia\"\n}"
+            },
+            "url": {
+              "raw": "{{base_compras}}/api/compras/2",
+              "host": ["{{base_compras}}"],
+              "path": ["api", "compras", "2"]
+            },
+            "description": "Actualiza los datos de una compra existente, por ejemplo para cambiar su estado."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 2,\n  \"proveedorId\": 1,\n  \"estado\": \"APROBADA\",\n  \"total\": 250000.0\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Compra no encontrada con id: 99\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Eliminar compra",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_compras}}/api/compras/2",
+              "host": ["{{base_compras}}"],
+              "path": ["api", "compras", "2"]
+            },
+            "description": "Elimina permanentemente una compra por su ID."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Compra no encontrada con id: 99\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MS-Notificaciones (puerto 8088)",
+      "description": "Gestión de notificaciones hacia los socios. Estados: PENDIENTE, ENVIADA, LEIDA.",
+      "item": [
+        {
+          "name": "Listar todas las notificaciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_notificaciones}}/api/notificaciones",
+              "host": ["{{base_notificaciones}}"],
+              "path": ["api", "notificaciones"]
+            },
+            "description": "Retorna la lista completa de notificaciones del sistema."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"mensaje\": \"Su préstamo vence mañana\",\n    \"destinatario\": \"socio1@biblioteca.cl\",\n    \"tipo\": \"VENCIMIENTO\",\n    \"estado\": \"PENDIENTE\",\n    \"socioId\": 5,\n    \"fechaCreacion\": \"2025-06-22T10:30:00\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Obtener notificación por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_notificaciones}}/api/notificaciones/1",
+              "host": ["{{base_notificaciones}}"],
+              "path": ["api", "notificaciones", "1"]
+            },
+            "description": "Retorna una notificación específica según su ID."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 1,\n  \"mensaje\": \"Su préstamo vence mañana\",\n  \"destinatario\": \"socio1@biblioteca.cl\",\n  \"tipo\": \"VENCIMIENTO\",\n  \"estado\": \"PENDIENTE\",\n  \"socioId\": 5,\n  \"fechaCreacion\": \"2025-06-22T10:30:00\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Notificacion no encontrada con id: 99\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Listar notificaciones por estado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_notificaciones}}/api/notificaciones/estado/PENDIENTE",
+              "host": ["{{base_notificaciones}}"],
+              "path": ["api", "notificaciones", "estado", "PENDIENTE"]
+            },
+            "description": "Filtra notificaciones por su estado actual."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"mensaje\": \"Su préstamo vence mañana\",\n    \"estado\": \"PENDIENTE\",\n    \"socioId\": 5\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Listar notificaciones por socio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_notificaciones}}/api/notificaciones/socio/5",
+              "host": ["{{base_notificaciones}}"],
+              "path": ["api", "notificaciones", "socio", "5"]
+            },
+            "description": "Retorna todas las notificaciones dirigidas a un socio específico."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"mensaje\": \"Su préstamo vence mañana\",\n    \"destinatario\": \"socio1@biblioteca.cl\",\n    \"tipo\": \"VENCIMIENTO\",\n    \"estado\": \"PENDIENTE\",\n    \"socioId\": 5\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Crear notificación",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mensaje\": \"Su préstamo vence en 3 días\",\n  \"destinatario\": \"socio2@biblioteca.cl\",\n  \"tipo\": \"VENCIMIENTO\",\n  \"estado\": \"PENDIENTE\",\n  \"socioId\": 7\n}"
+            },
+            "url": {
+              "raw": "{{base_notificaciones}}/api/notificaciones",
+              "host": ["{{base_notificaciones}}"],
+              "path": ["api", "notificaciones"]
+            },
+            "description": "Crea y registra una nueva notificación. La fechaCreacion se genera automáticamente."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": 2,\n  \"mensaje\": \"Su préstamo vence en 3 días\",\n  \"destinatario\": \"socio2@biblioteca.cl\",\n  \"tipo\": \"VENCIMIENTO\",\n  \"estado\": \"PENDIENTE\",\n  \"socioId\": 7,\n  \"fechaCreacion\": \"2025-06-22T14:00:00\"\n}"
+            },
+            {
+              "name": "400 Bad Request",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"mensaje\": \"El mensaje no puede estar vacío\",\n  \"socioId\": \"El id del socio no puede ser nulo\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar notificación",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mensaje\": \"Su préstamo ya venció\",\n  \"destinatario\": \"socio2@biblioteca.cl\",\n  \"tipo\": \"VENCIMIENTO\",\n  \"estado\": \"ENVIADA\",\n  \"socioId\": 7\n}"
+            },
+            "url": {
+              "raw": "{{base_notificaciones}}/api/notificaciones/2",
+              "host": ["{{base_notificaciones}}"],
+              "path": ["api", "notificaciones", "2"]
+            },
+            "description": "Actualiza el contenido o estado de una notificación existente."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 2,\n  \"mensaje\": \"Su préstamo ya venció\",\n  \"estado\": \"ENVIADA\",\n  \"socioId\": 7\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Notificacion no encontrada con id: 99\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Eliminar notificación",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_notificaciones}}/api/notificaciones/2",
+              "host": ["{{base_notificaciones}}"],
+              "path": ["api", "notificaciones", "2"]
+            },
+            "description": "Elimina permanentemente una notificación por su ID."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Notificacion no encontrada con id: 99\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MS-Proveedores (puerto 8086)",
+      "description": "Gestión de proveedores de materiales bibliográficos. El RUT es único por proveedor.",
+      "item": [
+        {
+          "name": "Listar todos los proveedores",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_proveedores}}/api/proveedores",
+              "host": ["{{base_proveedores}}"],
+              "path": ["api", "proveedores"]
+            },
+            "description": "Retorna la lista completa de todos los proveedores registrados."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"nombre\": \"Editorial Académica S.A.\",\n    \"rut\": \"76.123.456-7\",\n    \"email\": \"contacto@editorial.cl\",\n    \"telefono\": \"+56912345678\",\n    \"direccion\": \"Av. Providencia 1234, Santiago\",\n    \"activo\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Listar proveedores activos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_proveedores}}/api/proveedores/activos",
+              "host": ["{{base_proveedores}}"],
+              "path": ["api", "proveedores", "activos"]
+            },
+            "description": "Retorna únicamente los proveedores con estado activo = true."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"nombre\": \"Editorial Académica S.A.\",\n    \"rut\": \"76.123.456-7\",\n    \"activo\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Obtener proveedor por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_proveedores}}/api/proveedores/1",
+              "host": ["{{base_proveedores}}"],
+              "path": ["api", "proveedores", "1"]
+            },
+            "description": "Retorna un proveedor específico según su ID."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 1,\n  \"nombre\": \"Editorial Académica S.A.\",\n  \"rut\": \"76.123.456-7\",\n  \"email\": \"contacto@editorial.cl\",\n  \"telefono\": \"+56912345678\",\n  \"direccion\": \"Av. Providencia 1234, Santiago\",\n  \"activo\": true\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Proveedor no encontrado con id: 99\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Crear proveedor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Distribuidora Bibliográfica Ltda.\",\n  \"rut\": \"77.888.999-0\",\n  \"email\": \"ventas@distribuidora.cl\",\n  \"telefono\": \"+56222334455\",\n  \"direccion\": \"Calle Monjitas 567, Santiago\",\n  \"activo\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_proveedores}}/api/proveedores",
+              "host": ["{{base_proveedores}}"],
+              "path": ["api", "proveedores"]
+            },
+            "description": "Registra un nuevo proveedor. El RUT debe ser único en el sistema."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": 2,\n  \"nombre\": \"Distribuidora Bibliográfica Ltda.\",\n  \"rut\": \"77.888.999-0\",\n  \"email\": \"ventas@distribuidora.cl\",\n  \"telefono\": \"+56222334455\",\n  \"activo\": true\n}"
+            },
+            {
+              "name": "400 Bad Request - RUT duplicado",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"Ya existe un proveedor con el RUT: 77.888.999-0\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar proveedor",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Distribuidora Bibliográfica Ltda. (actualizada)\",\n  \"rut\": \"77.888.999-0\",\n  \"email\": \"nuevoemail@distribuidora.cl\",\n  \"telefono\": \"+56299998888\",\n  \"direccion\": \"Avenida Nueva 890, Santiago\",\n  \"activo\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_proveedores}}/api/proveedores/2",
+              "host": ["{{base_proveedores}}"],
+              "path": ["api", "proveedores", "2"]
+            },
+            "description": "Actualiza la información de un proveedor existente."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 2,\n  \"nombre\": \"Distribuidora Bibliográfica Ltda. (actualizada)\",\n  \"rut\": \"77.888.999-0\",\n  \"email\": \"nuevoemail@distribuidora.cl\",\n  \"activo\": true\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Proveedor no encontrado con id: 99\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Eliminar proveedor",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_proveedores}}/api/proveedores/2",
+              "host": ["{{base_proveedores}}"],
+              "path": ["api", "proveedores", "2"]
+            },
+            "description": "Elimina permanentemente un proveedor por su ID."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Proveedor no encontrado con id: 99\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MS-Reportes (puerto 8089)",
+      "description": "Generación y gestión de reportes del sistema. Tipos: PRESTAMOS, LIBROS, SOCIOS, COMPRAS. Estados: GENERADO, PENDIENTE, ERROR.",
+      "item": [
+        {
+          "name": "Listar todos los reportes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_reportes}}/api/reportes",
+              "host": ["{{base_reportes}}"],
+              "path": ["api", "reportes"]
+            },
+            "description": "Retorna la lista completa de todos los reportes generados."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"tipo\": \"PRESTAMOS\",\n    \"titulo\": \"Reporte de Préstamos Junio 2025\",\n    \"descripcion\": \"Detalle de préstamos del mes\",\n    \"fechaGeneracion\": \"2025-06-22\",\n    \"estado\": \"GENERADO\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Obtener reporte por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_reportes}}/api/reportes/1",
+              "host": ["{{base_reportes}}"],
+              "path": ["api", "reportes", "1"]
+            },
+            "description": "Retorna un reporte específico según su ID."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 1,\n  \"tipo\": \"PRESTAMOS\",\n  \"titulo\": \"Reporte de Préstamos Junio 2025\",\n  \"descripcion\": \"Detalle de préstamos del mes\",\n  \"fechaGeneracion\": \"2025-06-22\",\n  \"estado\": \"GENERADO\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Reporte no encontrado con id: 99\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Listar reportes por tipo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_reportes}}/api/reportes/tipo/PRESTAMOS",
+              "host": ["{{base_reportes}}"],
+              "path": ["api", "reportes", "tipo", "PRESTAMOS"]
+            },
+            "description": "Filtra reportes por tipo. Valores: PRESTAMOS, LIBROS, SOCIOS, COMPRAS."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"tipo\": \"PRESTAMOS\",\n    \"titulo\": \"Reporte de Préstamos Junio 2025\",\n    \"estado\": \"GENERADO\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Listar reportes por estado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_reportes}}/api/reportes/estado/GENERADO",
+              "host": ["{{base_reportes}}"],
+              "path": ["api", "reportes", "estado", "GENERADO"]
+            },
+            "description": "Filtra reportes por estado. Valores: GENERADO, PENDIENTE, ERROR."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"tipo\": \"PRESTAMOS\",\n    \"titulo\": \"Reporte de Préstamos Junio 2025\",\n    \"estado\": \"GENERADO\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Crear reporte",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"SOCIOS\",\n  \"titulo\": \"Reporte de Socios Activos Junio 2025\",\n  \"descripcion\": \"Listado de socios con estado activo durante junio\",\n  \"fechaGeneracion\": \"2025-06-22\",\n  \"estado\": \"PENDIENTE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_reportes}}/api/reportes",
+              "host": ["{{base_reportes}}"],
+              "path": ["api", "reportes"]
+            },
+            "description": "Crea un nuevo reporte. Tipos: PRESTAMOS, LIBROS, SOCIOS, COMPRAS."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": 2,\n  \"tipo\": \"SOCIOS\",\n  \"titulo\": \"Reporte de Socios Activos Junio 2025\",\n  \"descripcion\": \"Listado de socios con estado activo durante junio\",\n  \"fechaGeneracion\": \"2025-06-22\",\n  \"estado\": \"PENDIENTE\"\n}"
+            },
+            {
+              "name": "400 Bad Request",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"tipo\": \"El tipo no puede estar vacío\",\n  \"titulo\": \"El título no puede estar vacío\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar reporte",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"SOCIOS\",\n  \"titulo\": \"Reporte de Socios Activos Junio 2025\",\n  \"descripcion\": \"Reporte generado exitosamente\",\n  \"fechaGeneracion\": \"2025-06-22\",\n  \"estado\": \"GENERADO\"\n}"
+            },
+            "url": {
+              "raw": "{{base_reportes}}/api/reportes/2",
+              "host": ["{{base_reportes}}"],
+              "path": ["api", "reportes", "2"]
+            },
+            "description": "Actualiza los datos de un reporte, por ejemplo para marcar como GENERADO."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 2,\n  \"tipo\": \"SOCIOS\",\n  \"titulo\": \"Reporte de Socios Activos Junio 2025\",\n  \"estado\": \"GENERADO\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Reporte no encontrado con id: 99\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Eliminar reporte",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_reportes}}/api/reportes/2",
+              "host": ["{{base_reportes}}"],
+              "path": ["api", "reportes", "2"]
+            },
+            "description": "Elimina permanentemente un reporte por su ID."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Reporte no encontrado con id: 99\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

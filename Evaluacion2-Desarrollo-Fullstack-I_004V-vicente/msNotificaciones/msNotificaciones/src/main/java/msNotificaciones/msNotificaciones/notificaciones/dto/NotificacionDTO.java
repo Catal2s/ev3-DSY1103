@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class NotificacionDTO {
 
@@ -16,10 +18,12 @@ public class NotificacionDTO {
     @NotBlank(message = "El tipo no puede estar vacío")
     private String tipo;
 
-    private String estado = "PENDIENTE";
+    // Estado opcional desde el cliente; la entidad lo asigna si viene nulo
+    private String estado;
 
     @NotNull(message = "El id del socio no puede ser nulo")
     private Long socioId;
 
-    private String fechaCreacion;
+    // Corregido: LocalDateTime en lugar de String
+    private LocalDateTime fechaCreacion;
 }

@@ -1,0 +1,160 @@
+version: '3.8'
+
+services:
+  mysql-socios:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: biblioteca_socios
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+
+  mysql-prestamos:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: biblioteca_prestamos
+    ports:
+      - "3308:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+
+  mysql-pagos:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: biblioteca_pagos
+    ports:
+      - "3309:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+
+  mysql-reservas:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: biblioteca_reservas
+    ports:
+      - "3310:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+
+  mysql-multas:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: biblioteca_multas
+    ports:
+      - "3311:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+
+  socios-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: socios-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-socios:3306/biblioteca_socios?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      mysql-socios:
+        condition: service_healthy
+
+  prestamos-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: prestamos-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-prestamos:3306/biblioteca_prestamos?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SOCIOS_SERVICE_URL: http://socios-service:8081
+    depends_on:
+      mysql-prestamos:
+        condition: service_healthy
+      socios-service:
+        condition: service_started
+
+  pagos-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: pagos-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-pagos:3306/biblioteca_pagos?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      MULTAS_SERVICE_URL: http://multas-service:8085
+    depends_on:
+      mysql-pagos:
+        condition: service_healthy
+      multas-service:
+        condition: service_started
+
+  reservas-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: reservas-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-reservas:3306/biblioteca_reservas?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      mysql-reservas:
+        condition: service_healthy
+
+  multas-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: multas-service
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-multas:3306/biblioteca_multas?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      PRESTAMOS_SERVICE_URL: http://prestamos-service:8082
+    depends_on:
+      mysql-multas:
+        condition: service_healthy
+      prestamos-service:
+        condition: service_started
+
+  gateway-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: gateway-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - socios-service
+      - prestamos-service
+      - pagos-service
+      - reservas-service
+      - multas-service

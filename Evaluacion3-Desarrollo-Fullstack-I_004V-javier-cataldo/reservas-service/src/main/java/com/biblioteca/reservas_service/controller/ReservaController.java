@@ -3,15 +3,18 @@ package com.biblioteca.reservas_service.controller;
 import com.biblioteca.reservas_service.model.Reserva;
 import com.biblioteca.reservas_service.service.ReservaService;
 import jakarta.validation.Valid;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
-/**
- * Controlador REST para el microservicio de Reservas.
- * Expone endpoints para gestionar reservas de libros.
- * Sigue el patron CSR: Controller -> Service -> Repository
- */
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping("/api/reservas")
 public class ReservaController {
@@ -22,58 +25,42 @@ public class ReservaController {
         this.reservaService = reservaService;
     }
 
-    /**
-     * GET /api/reservas
-     * Obtiene todas las reservas registradas.
-     * @return lista de reservas con codigo HTTP 200
-     */
     @GetMapping
-    public ResponseEntity<List<Reserva>> obtenerTodas() {
-        return ResponseEntity.ok(reservaService.obtenerTodas());
+    public ResponseEntity<CollectionModel<EntityModel<Reserva>>> obtenerTodas() {
+        List<EntityModel<Reserva>> reservas = reservaService.obtenerTodas().stream()
+                .map(this::agregarLinks)
+                .collect(Collectors.toList());
+        Link selfLink = linkTo(methodOn(ReservaController.class).obtenerTodas()).withSelfRel();
+        return ResponseEntity.ok(CollectionModel.of(reservas, selfLink));
     }
 
-    /**
-     * GET /api/reservas/{id}
-     * Obtiene una reserva por su ID.
-     * @param id ID de la reserva
-     * @return reserva encontrada con codigo HTTP 200
-     */
     @GetMapping("/{id}")
-    public ResponseEntity<Reserva> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(reservaService.obtenerPorId(id));
+    public ResponseEntity<EntityModel<Reserva>> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(agregarLinks(reservaService.obtenerPorId(id)));
     }
 
-    /**
-     * GET /api/reservas/socio/{socioId}
-     * Obtiene todas las reservas de un socio especifico.
-     * @param socioId ID del socio
-     * @return lista de reservas del socio con codigo HTTP 200
-     */
     @GetMapping("/socio/{socioId}")
-    public ResponseEntity<List<Reserva>> obtenerPorSocio(@PathVariable Long socioId) {
-        return ResponseEntity.ok(reservaService.obtenerPorSocio(socioId));
+    public ResponseEntity<CollectionModel<EntityModel<Reserva>>> obtenerPorSocio(@PathVariable Long socioId) {
+        List<EntityModel<Reserva>> reservas = reservaService.obtenerPorSocio(socioId).stream()
+                .map(this::agregarLinks)
+                .collect(Collectors.toList());
+        Link selfLink = linkTo(methodOn(ReservaController.class).obtenerPorSocio(socioId)).withSelfRel();
+        return ResponseEntity.ok(CollectionModel.of(reservas, selfLink));
     }
 
-    /**
-     * POST /api/reservas
-     * Crea una nueva reserva. Los datos son validados automaticamente
-     * mediante las anotaciones de Bean Validation en la entidad.
-     * @param reserva datos de la reserva a crear (JSON)
-     * @return reserva creada con codigo HTTP 200
-     */
     @PostMapping
-    public ResponseEntity<Reserva> crearReserva(@Valid @RequestBody Reserva reserva) {
-        return ResponseEntity.ok(reservaService.crearReserva(reserva));
+    public ResponseEntity<EntityModel<Reserva>> crearReserva(@Valid @RequestBody Reserva reserva) {
+        return ResponseEntity.ok(agregarLinks(reservaService.crearReserva(reserva)));
     }
 
-    /**
-     * PUT /api/reservas/{id}/cancelar
-     * Cancela una reserva cambiando su estado a CANCELADA.
-     * @param id ID de la reserva a cancelar
-     * @return reserva cancelada con codigo HTTP 200
-     */
     @PutMapping("/{id}/cancelar")
-    public ResponseEntity<Reserva> cancelarReserva(@PathVariable Long id) {
-        return ResponseEntity.ok(reservaService.cancelarReserva(id));
+    public ResponseEntity<EntityModel<Reserva>> cancelarReserva(@PathVariable Long id) {
+        return ResponseEntity.ok(agregarLinks(reservaService.cancelarReserva(id)));
+    }
+
+    private EntityModel<Reserva> agregarLinks(Reserva reserva) {
+        Link selfLink = linkTo(methodOn(ReservaController.class).obtenerPorId(reserva.getId())).withSelfRel();
+        Link todasLink = linkTo(methodOn(ReservaController.class).obtenerTodas()).withRel("reservas");
+        return EntityModel.of(reserva, selfLink, todasLink);
     }
 }

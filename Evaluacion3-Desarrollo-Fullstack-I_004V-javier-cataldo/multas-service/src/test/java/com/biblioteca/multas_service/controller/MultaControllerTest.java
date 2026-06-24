@@ -35,7 +35,7 @@ class MultaControllerTest {
 
         mockMvc.perform(get("/api/multas"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$._embedded.multaList.length()").value(1));
     }
 
     @Test
@@ -44,7 +44,7 @@ class MultaControllerTest {
 
         mockMvc.perform(get("/api/multas"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$._embedded").doesNotExist());
     }
 
     @Test
@@ -55,7 +55,8 @@ class MultaControllerTest {
 
         mockMvc.perform(get("/api/multas/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
@@ -72,7 +73,7 @@ class MultaControllerTest {
 
         mockMvc.perform(get("/api/multas/socio/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$._embedded.multaList.length()").value(1));
     }
 
     @Test
@@ -81,7 +82,7 @@ class MultaControllerTest {
 
         mockMvc.perform(get("/api/multas/pendientes"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$._embedded.multaList.length()").value(1));
     }
 
     @Test
@@ -90,7 +91,7 @@ class MultaControllerTest {
 
         mockMvc.perform(get("/api/multas/pendientes"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$._embedded").doesNotExist());
     }
 
     @Test
@@ -108,7 +109,8 @@ class MultaControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
@@ -130,7 +132,8 @@ class MultaControllerTest {
 
         mockMvc.perform(put("/api/multas/1/pagar"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pagada").value(true));
+                .andExpect(jsonPath("$.pagada").value(true))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test

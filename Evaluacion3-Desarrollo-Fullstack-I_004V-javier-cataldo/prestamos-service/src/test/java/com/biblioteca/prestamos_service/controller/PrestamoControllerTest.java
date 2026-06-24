@@ -37,7 +37,7 @@ class PrestamoControllerTest {
 
         mockMvc.perform(get("/api/prestamos"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$._embedded.prestamoResponseDTOList.length()").value(1));
     }
 
     @Test
@@ -46,7 +46,7 @@ class PrestamoControllerTest {
 
         mockMvc.perform(get("/api/prestamos"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$._embedded").doesNotExist());
     }
 
     @Test
@@ -57,7 +57,8 @@ class PrestamoControllerTest {
 
         mockMvc.perform(get("/api/prestamos/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
@@ -74,7 +75,7 @@ class PrestamoControllerTest {
 
         mockMvc.perform(get("/api/prestamos/socio/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$._embedded.prestamoResponseDTOList.length()").value(1));
     }
 
     @Test
@@ -92,7 +93,8 @@ class PrestamoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
@@ -114,7 +116,8 @@ class PrestamoControllerTest {
 
         mockMvc.perform(put("/api/prestamos/1/devolver"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.activo").value(false));
+                .andExpect(jsonPath("$.activo").value(false))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test

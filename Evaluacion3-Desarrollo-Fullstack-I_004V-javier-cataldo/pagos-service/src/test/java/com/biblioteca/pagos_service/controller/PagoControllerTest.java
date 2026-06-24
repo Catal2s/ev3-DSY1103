@@ -36,7 +36,7 @@ class PagoControllerTest {
 
         mockMvc.perform(get("/api/pagos"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$._embedded.pagoResponseDTOList.length()").value(1));
     }
 
     @Test
@@ -45,7 +45,7 @@ class PagoControllerTest {
 
         mockMvc.perform(get("/api/pagos"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$._embedded").doesNotExist());
     }
 
     @Test
@@ -56,7 +56,8 @@ class PagoControllerTest {
 
         mockMvc.perform(get("/api/pagos/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
@@ -73,7 +74,7 @@ class PagoControllerTest {
 
         mockMvc.perform(get("/api/pagos/socio/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$._embedded.pagoResponseDTOList.length()").value(1));
     }
 
     @Test
@@ -82,7 +83,7 @@ class PagoControllerTest {
 
         mockMvc.perform(get("/api/pagos/socio/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$._embedded").doesNotExist());
     }
 
     @Test
@@ -100,7 +101,8 @@ class PagoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test

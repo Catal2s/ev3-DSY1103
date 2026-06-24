@@ -38,7 +38,7 @@ class SocioControllerTest {
 
         mockMvc.perform(get("/api/socios"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$._embedded.socioResponseDTOList.length()").value(1));
     }
 
     @Test
@@ -47,7 +47,7 @@ class SocioControllerTest {
 
         mockMvc.perform(get("/api/socios"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$._embedded").doesNotExist());
     }
 
     @Test
@@ -60,7 +60,8 @@ class SocioControllerTest {
         mockMvc.perform(get("/api/socios/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.nombre").value("Juan"));
+                .andExpect(jsonPath("$.nombre").value("Juan"))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test

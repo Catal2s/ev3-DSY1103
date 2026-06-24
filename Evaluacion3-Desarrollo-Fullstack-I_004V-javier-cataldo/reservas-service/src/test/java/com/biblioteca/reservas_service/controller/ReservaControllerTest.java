@@ -35,7 +35,7 @@ class ReservaControllerTest {
 
         mockMvc.perform(get("/api/reservas"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$._embedded.reservaList.length()").value(1));
     }
 
     @Test
@@ -44,7 +44,7 @@ class ReservaControllerTest {
 
         mockMvc.perform(get("/api/reservas"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$._embedded").doesNotExist());
     }
 
     @Test
@@ -55,7 +55,8 @@ class ReservaControllerTest {
 
         mockMvc.perform(get("/api/reservas/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
@@ -72,7 +73,7 @@ class ReservaControllerTest {
 
         mockMvc.perform(get("/api/reservas/socio/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$._embedded.reservaList.length()").value(1));
     }
 
     @Test
@@ -81,7 +82,7 @@ class ReservaControllerTest {
 
         mockMvc.perform(get("/api/reservas/socio/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$._embedded").doesNotExist());
     }
 
     @Test
@@ -98,7 +99,8 @@ class ReservaControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
@@ -120,7 +122,8 @@ class ReservaControllerTest {
 
         mockMvc.perform(put("/api/reservas/1/cancelar"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.estado").value("CANCELADA"));
+                .andExpect(jsonPath("$.estado").value("CANCELADA"))
+                .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test

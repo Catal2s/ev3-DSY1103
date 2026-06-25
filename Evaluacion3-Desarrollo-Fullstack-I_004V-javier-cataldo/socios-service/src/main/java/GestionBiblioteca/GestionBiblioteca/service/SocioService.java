@@ -74,6 +74,15 @@ public class SocioService {
         Socio socio = socioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Socio no encontrado con id: " + id));
 
+        //Valida que el RUT no este repetido (excluyendo el socio actual)
+        if (!socio.getRut().equals(request.getRut()) && socioRepository.existsByRut(request.getRut())) {
+            throw new RuntimeException("El RUT " + request.getRut() + " ya esta registrado por otro socio.");
+        }
+        //Valida que el email no este repetido (excluyendo el socio actual)
+        if (!socio.getEmail().equals(request.getEmail()) && socioRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("El email " + request.getEmail() + " ya esta registrado por otro socio.");
+        }
+
         socio.setNombre(request.getNombre());
         socio.setRut(request.getRut());
         socio.setEmail(request.getEmail());
@@ -84,7 +93,10 @@ public class SocioService {
     }
 
     public void eliminarSocio(Long id) {
-        log.info("Eliminando socio con id: {}", id);
-        socioRepository.deleteById(id);
+        log.info("Desactivando socio con id: {} (soft-delete)", id);
+        Socio socio = socioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Socio no encontrado con id: " + id));
+        socio.setActivo(false);
+        socioRepository.save(socio);
     }
 }

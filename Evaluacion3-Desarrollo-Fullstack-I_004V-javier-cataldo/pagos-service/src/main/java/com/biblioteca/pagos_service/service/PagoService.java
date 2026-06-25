@@ -71,6 +71,16 @@ public class PagoService {
                 throw new RuntimeException("La multa con ID " + request.getMultaId() + " ya está pagada.");
             }
 
+            //Regla de negocio: el monto del pago debe coincidir con el monto de la multa
+            if (multaJson.has("monto") && Math.abs(multaJson.get("monto").asDouble() - request.getMonto()) > 0.01) {
+                throw new RuntimeException("El monto del pago (" + request.getMonto() + ") no coincide con el monto de la multa (" + multaJson.get("monto").asDouble() + ").");
+            }
+
+            //Regla de negocio: el socioId del pago debe coincidir con el socioId de la multa
+            if (multaJson.has("socioId") && multaJson.get("socioId").asLong() != request.getSocioId()) {
+                throw new RuntimeException("El socio del pago no coincide con el socio de la multa.");
+            }
+
             log.info("Multa {} validada correctamente con multas-service", request.getMultaId());
         } catch (Exception e) {
             log.error("Error al validar multa con id: {}", request.getMultaId());

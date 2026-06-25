@@ -19,4 +19,13 @@ public interface PrestamoRepository extends JpaRepository<Prestamo, Long> {
      * @return lista de prestamos del socio
      */
     List<Prestamo> findBySocioId(Long socioId);
+
+    /**
+     * Verifica si ya existe un prestamo activo del mismo libro para el mismo socio.
+     * Evita prestamos duplicados del mismo libro a la misma persona.
+     * @param socioId ID del socio
+     * @param libroId ID del libro
+     * @return true si ya existe un prestamo activo
+     */
+    boolean existsBySocioIdAndLibroIdAndActivoTrue(Long socioId, Long libroId);
 }

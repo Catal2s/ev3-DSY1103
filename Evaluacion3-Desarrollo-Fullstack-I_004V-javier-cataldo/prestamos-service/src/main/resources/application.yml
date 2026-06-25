@@ -17,3 +17,6 @@ server:
 socios:
   service:
     url: ${SOCIOS_SERVICE_URL:http://localhost:8081}
+multas:
+  service:
+    url: ${MULTAS_SERVICE_URL:http://localhost:8085}

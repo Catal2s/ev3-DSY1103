@@ -31,4 +31,12 @@ public interface MultaRepository extends JpaRepository<Multa, Long> {
      * @return lista de multas pendientes
      */
     List<Multa> findByPagadaFalse();
+
+    /**
+     * Verifica si ya existe una multa para el prestamo especificado.
+     * Evita multas duplicadas para el mismo prestamo.
+     * @param prestamoId ID del prestamo
+     * @return true si ya existe una multa
+     */
+    boolean existsByPrestamoId(Long prestamoId);
 }

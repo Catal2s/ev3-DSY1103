@@ -12,3 +12,6 @@ spring:
     show-sql: true
 server:
   port: ${SERVER_PORT:8084}
+socios:
+  service:
+    url: ${SOCIOS_SERVICE_URL:http://localhost:8081}

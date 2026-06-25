@@ -22,12 +22,15 @@ public class PrestamoService {
     private final PrestamoRepository prestamoRepository;
     private final WebClient webClient;
     private final String sociosServiceUrl;
+    private final String multasServiceUrl;
 
     public PrestamoService(PrestamoRepository prestamoRepository, WebClient webClient,
-                           @Value("${socios.service.url:http://localhost:8081}") String sociosServiceUrl) {
+                           @Value("${socios.service.url:http://localhost:8081}") String sociosServiceUrl,
+                           @Value("${multas.service.url:http://localhost:8085}") String multasServiceUrl) {
         this.prestamoRepository = prestamoRepository;
         this.webClient = webClient;
         this.sociosServiceUrl = sociosServiceUrl;
+        this.multasServiceUrl = multasServiceUrl;
     }
 
     private PrestamoResponseDTO convertirAResponse(Prestamo p) {
@@ -62,6 +65,11 @@ public class PrestamoService {
             throw new RuntimeException("La fecha de devolucion no puede ser anterior a la fecha actual.");
         }
 
+        //Regla de negocio: mismo libro ya prestado al socio
+        if (prestamoRepository.existsBySocioIdAndLibroIdAndActivoTrue(request.getSocioId(), request.getLibroId())) {
+            throw new RuntimeException("El socio con ID " + request.getSocioId() + " ya tiene un prestamo activo del libro con ID " + request.getLibroId() + ".");
+        }
+
         //Llama al microservicio de socios pa validar que el socio existe y esta activo
         try {
             JsonNode socioJson = webClient.get()
@@ -77,6 +85,29 @@ public class PrestamoService {
         } catch (Exception e) {
             log.error("Error al validar socio con id: {}", request.getSocioId());
             throw new RuntimeException("No se pudo validar el socio. Asegurate de que socios-service este corriendo.");
+        }
+
+        //Regla de negocio: socio sin multas pendientes
+        try {
+            JsonNode multasJson = webClient.get()
+                    .uri(multasServiceUrl + "/api/multas/socio/" + request.getSocioId())
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .block();
+
+            if (multasJson != null && multasJson.isArray()) {
+                for (int i = 0; i < multasJson.size(); i++) {
+                    JsonNode multa = multasJson.get(i);
+                    if (multa.has("pagada") && !multa.get("pagada").asBoolean()) {
+                        throw new RuntimeException("El socio con ID " + request.getSocioId() + " tiene multas pendientes. Debe pagarlas antes de solicitar un nuevo prestamo.");
+                    }
+                }
+            }
+            log.info("Multas del socio {} validadas correctamente con multas-service", request.getSocioId());
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("No se pudo validar multas pendientes para socio {}: {}", request.getSocioId(), e.getMessage());
         }
 
         Prestamo prestamo = new Prestamo();

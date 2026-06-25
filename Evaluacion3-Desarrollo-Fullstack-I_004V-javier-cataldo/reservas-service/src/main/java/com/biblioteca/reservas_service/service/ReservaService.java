@@ -2,9 +2,15 @@ package com.biblioteca.reservas_service.service;
 
 import com.biblioteca.reservas_service.model.Reserva;
 import com.biblioteca.reservas_service.repository.ReservaRepository;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -17,9 +23,14 @@ public class ReservaService {
 
     private static final Logger log = LoggerFactory.getLogger(ReservaService.class);
     private final ReservaRepository reservaRepository;
+    private final WebClient webClient;
+    private final String sociosServiceUrl;
 
-    public ReservaService(ReservaRepository reservaRepository) {
+    public ReservaService(ReservaRepository reservaRepository, WebClient webClient,
+                          @Value("${socios.service.url:http://localhost:8081}") String sociosServiceUrl) {
         this.reservaRepository = reservaRepository;
+        this.webClient = webClient;
+        this.sociosServiceUrl = sociosServiceUrl;
     }
 
     /**
@@ -51,8 +62,50 @@ public class ReservaService {
      * @return reserva creada con sus valores asignados
      */
     public Reserva crearReserva(Reserva reserva) {
+        //Regla de negocio: validar que el socio existe
+        try {
+            JsonNode socioJson = webClient.get()
+                    .uri(sociosServiceUrl + "/api/socios/" + reserva.getSocioId())
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .block();
+
+            if (socioJson == null) {
+                throw new RuntimeException("El socio con ID " + reserva.getSocioId() + " no existe.");
+            }
+            log.info("Socio {} validado correctamente con socios-service", reserva.getSocioId());
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error al validar socio con id: {}", reserva.getSocioId());
+            throw new RuntimeException("No se pudo validar el socio. Asegurate de que socios-service este corriendo.");
+        }
+
+        //Regla de negocio: reserva duplicada mismo socio+libro
+        if (reservaRepository.existsBySocioIdAndLibroIdAndActivoTrue(reserva.getSocioId(), reserva.getLibroId())) {
+            throw new RuntimeException("El socio con ID " + reserva.getSocioId() + " ya tiene una reserva activa del libro con ID " + reserva.getLibroId() + ".");
+        }
+
         log.info("Creando reserva para socio id: {} y libro id: {}", reserva.getSocioId(), reserva.getLibroId());
         return reservaRepository.save(reserva);
+    }
+
+    /**
+     * Tarea programada que se ejecuta cada minuto para auto-expiracion de reservas.
+     * Cambia el estado de reservas PENDIENTE cuya fecha de expiracion ya paso a "EXPIRADA".
+     */
+    @Scheduled(fixedRate = 60000)
+    public void autoExpiracionReservas() {
+        List<Reserva> expiradas = reservaRepository.findByEstadoAndFechaExpiracionBefore("PENDIENTE", LocalDate.now());
+        for (Reserva reserva : expiradas) {
+            reserva.setEstado("EXPIRADA");
+            reserva.setActivo(false);
+            reservaRepository.save(reserva);
+            log.info("Reserva {} auto-expirada por fecha de expiracion vencida", reserva.getId());
+        }
+        if (!expiradas.isEmpty()) {
+            log.info("Se auto-expiraron {} reservas", expiradas.size());
+        }
     }
 
     /**

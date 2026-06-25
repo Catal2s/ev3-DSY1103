@@ -56,7 +56,6 @@ public class PagoService {
     }
 
     public PagoResponseDTO registrarPago(PagoRequestDTO request) {
-        //Valida que la multa exista llamando a multas-service
         try {
             JsonNode multaJson = webClient.get()
                     .uri(multasServiceUrl + "/api/multas/" + request.getMultaId())
@@ -67,10 +66,15 @@ public class PagoService {
             if (multaJson == null) {
                 throw new RuntimeException("La multa con ID " + request.getMultaId() + " no existe.");
             }
+
+            if (multaJson.has("pagada") && multaJson.get("pagada").asBoolean()) {
+                throw new RuntimeException("La multa con ID " + request.getMultaId() + " ya está pagada.");
+            }
+
             log.info("Multa {} validada correctamente con multas-service", request.getMultaId());
         } catch (Exception e) {
             log.error("Error al validar multa con id: {}", request.getMultaId());
-            throw new RuntimeException("No se pudo validar la multa. Asegurate de que multas-service este corriendo.");
+            throw new RuntimeException("No se pudo validar la multa. " + e.getMessage());
         }
 
         Pago pago = new Pago();
@@ -79,7 +83,20 @@ public class PagoService {
         pago.setMonto(request.getMonto());
 
         log.info("Registrando pago para socio id: {}", request.getSocioId());
-        return convertirAResponse(pagoRepository.save(pago));
+        PagoResponseDTO response = convertirAResponse(pagoRepository.save(pago));
+
+        try {
+            webClient.put()
+                    .uri(multasServiceUrl + "/api/multas/" + request.getMultaId() + "/pagar")
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+            log.info("Multa {} marcada como pagada en multas-service", request.getMultaId());
+        } catch (Exception e) {
+            log.warn("Pago registrado pero no se pudo notificar a multas-service: {}", e.getMessage());
+        }
+
+        return response;
     }
 
     public List<PagoResponseDTO> obtenerPorSocio(Long socioId) {

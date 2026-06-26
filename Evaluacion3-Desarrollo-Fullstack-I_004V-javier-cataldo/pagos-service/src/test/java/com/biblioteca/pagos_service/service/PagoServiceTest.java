@@ -105,10 +105,6 @@ class PagoServiceTest {
         request.setSocioId(1L);
         request.setMonto(5000.0);
 
-        Pago pago = new Pago();
-        pago.setId(1L);
-        when(pagoRepository.save(any())).thenReturn(pago);
-
         assertThrows(RuntimeException.class, () -> pagoService.registrarPago(request));
     }
 }

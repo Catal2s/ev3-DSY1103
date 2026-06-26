@@ -1,6 +1,7 @@
 package com.biblioteca.multas_service;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
@@ -8,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  * se inicializa correctamente sin errores.
  */
 @SpringBootTest
+@AutoConfigureTestDatabase
 class MultasServiceApplicationTests {
 
     @Test

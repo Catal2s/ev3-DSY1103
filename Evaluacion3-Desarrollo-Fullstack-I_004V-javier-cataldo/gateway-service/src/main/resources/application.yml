@@ -8,35 +8,35 @@ spring:
     gateway:
       routes:
         - id: socios-service
-          uri: http://localhost:8081
+          uri: http://socios-service:8081
           predicates:
             - Path=/api/socios/**
           filters:
             - StripPrefix=0
 
         - id: prestamos-service
-          uri: http://localhost:8082
+          uri: http://prestamos-service:8082
           predicates:
             - Path=/api/prestamos/**
           filters:
             - StripPrefix=0
 
         - id: pagos-service
-          uri: http://localhost:8083
+          uri: http://pagos-service:8083
           predicates:
             - Path=/api/pagos/**
           filters:
             - StripPrefix=0
 
         - id: reservas-service
-          uri: http://localhost:8084
+          uri: http://reservas-service:8084
           predicates:
             - Path=/api/reservas/**
           filters:
             - StripPrefix=0
 
         - id: multas-service
-          uri: http://localhost:8085
+          uri: http://multas-service:8085
           predicates:
             - Path=/api/multas/**
           filters:

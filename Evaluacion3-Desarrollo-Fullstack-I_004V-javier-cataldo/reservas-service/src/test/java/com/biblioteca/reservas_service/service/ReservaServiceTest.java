@@ -2,11 +2,15 @@ package com.biblioteca.reservas_service.service;
 
 import com.biblioteca.reservas_service.model.Reserva;
 import com.biblioteca.reservas_service.repository.ReservaRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +24,18 @@ class ReservaServiceTest {
 
     @Mock
     private ReservaRepository reservaRepository;
+
+    @Mock
+    private WebClient webClient;
+
+    @Mock
+    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
+
+    @Mock
+    private WebClient.RequestHeadersSpec requestHeadersSpec;
+
+    @Mock
+    private WebClient.ResponseSpec responseSpec;
 
     @InjectMocks
     private ReservaService reservaService;
@@ -65,6 +81,13 @@ class ReservaServiceTest {
         Reserva r = new Reserva();
         r.setSocioId(1L);
         r.setLibroId(1L);
+
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(JsonNode.class)).thenReturn(Mono.just(new ObjectMapper().createObjectNode()));
+
+        when(reservaRepository.existsBySocioIdAndLibroIdAndActivoTrue(anyLong(), anyLong())).thenReturn(false);
 
         when(reservaRepository.save(any())).thenAnswer(invocation -> {
             Reserva saved = invocation.getArgument(0);

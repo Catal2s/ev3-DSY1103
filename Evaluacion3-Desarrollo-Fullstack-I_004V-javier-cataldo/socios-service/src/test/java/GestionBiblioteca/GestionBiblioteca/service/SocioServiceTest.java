@@ -103,6 +103,9 @@ class SocioServiceTest {
         Socio existing = new Socio();
         existing.setId(1L);
         existing.setNombre("Old");
+        existing.setRut("12.345.678-9");
+        existing.setEmail("old@test.com");
+        existing.setTelefono("912345678");
 
         SocioRequestDTO request = new SocioRequestDTO();
         request.setNombre("New");
@@ -120,10 +123,18 @@ class SocioServiceTest {
 
     @Test
     void eliminarSocio_ShouldDelete() {
-        doNothing().when(socioRepository).deleteById(1L);
+        Socio socio = new Socio();
+        socio.setId(1L);
+        socio.setNombre("Juan");
+        socio.setRut("12.345.678-9");
+        socio.setActivo(true);
+        when(socioRepository.findById(1L)).thenReturn(Optional.of(socio));
+        when(socioRepository.save(any())).thenReturn(socio);
 
         socioService.eliminarSocio(1L);
 
-        verify(socioRepository, times(1)).deleteById(1L);
+        assertFalse(socio.isActivo());
+        verify(socioRepository, times(1)).findById(1L);
+        verify(socioRepository, times(1)).save(socio);
     }
 }

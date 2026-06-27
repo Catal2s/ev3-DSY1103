@@ -1,0 +1,31 @@
+﻿server:
+  port: 8080
+
+spring:
+  application:
+    name: msGateway
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: autores-route
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/autores/**
+            - id: categorias-route
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/categorias/**
+            - id: editoriales-route
+              uri: http://localhost:8083
+              predicates:
+                - Path=/api/editoriales/**
+            - id: ejemplares-route
+              uri: http://localhost:8084
+              predicates:
+                - Path=/api/ejemplares/**
+            - id: libros-route
+              uri: http://localhost:8085
+              predicates:
+                - Path=/api/libros/**
